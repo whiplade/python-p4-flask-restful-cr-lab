@@ -17,10 +17,56 @@ db.init_app(app)
 api = Api(app)
 
 class Plants(Resource):
-    pass
+    
+    def get(self):
+        
+        plants = Plant.query.all()
+        plant_data = []
+        for plant in plants:
+            plant_data.append({
+                'id': plant.id,
+                'name': plant.name,
+                'image': plant.image,
+                'price': plant.price
+            })
+
+        return jsonify(plant_data)
+     
+    def post(self):
+
+        data = request.json
+
+        new_plant = Plant(
+            name=data['name'],
+            image=data['image'],
+            price=data['price']
+        )
+
+        db.session.add(new_plant)
+        db.session.commit()
+
+        return jsonify({"message": "Plant record created successfully"}), 201
+
+api.add_resource(Plants, '/plants')
 
 class PlantByID(Resource):
-    pass
+
+    def get(self, id):
+        plant = Plant.query.get(id)
+
+        if plant is None:
+            return jsonify({"error": "Plant not found"}), 404
+
+        plant_data = {
+            'id': plant.id,
+            'name': plant.name,
+            'image': plant.image,
+            'price': plant.price
+        }
+
+        return jsonify(plant_data)
+    
+api.add_resource(PlantByID, '/plants/<int:id>')
         
 
 if __name__ == '__main__':
